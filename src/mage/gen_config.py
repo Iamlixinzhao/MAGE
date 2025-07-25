@@ -4,6 +4,7 @@ import config
 from google.oauth2 import service_account
 from llama_index.core.llms.llm import LLM
 from llama_index.llms.anthropic import Anthropic
+from llama_index.llms.ollama import Ollama  # Add this import for Ollama support
 from llama_index.llms.openai import OpenAI
 from llama_index.llms.vertex import Vertex
 from pydantic import BaseModel
@@ -37,9 +38,9 @@ class Config:
 
 
 def get_llm(**kwargs) -> LLM:
+    print("DEBUG: get_llm called with provider =", kwargs["provider"])
     cfg = Config(kwargs["cfg_path"])
-    provider: str = kwargs["provider"]
-    provider = provider.lower()
+    provider: str = kwargs["provider"].lower()
     if provider == "anthropic":
         try:
             llm: LLM = Anthropic(
@@ -47,20 +48,34 @@ def get_llm(**kwargs) -> LLM:
                 api_key=cfg["ANTHROPIC_API_KEY"],
                 max_tokens=kwargs["max_token"],
             )
-
         except Exception as e:
             raise Exception(f"gen_config: Failed to get {provider} LLM") from e
-    elif kwargs["provider"] == "openai":
+    elif provider == "openai":
         try:
             llm: LLM = OpenAI(
                 model=kwargs["model"],
                 api_key=cfg["OPENAI_API_KEY"],
                 max_tokens=kwargs["max_token"],
             )
-
         except Exception as e:
             raise Exception(f"gen_config: Failed to get {provider} LLM") from e
-    elif kwargs["provider"] == "vertex":
+    elif provider == "ollama":
+        try:
+            # Accept model_info and host from kwargs, with defaults
+            model_info = kwargs.get("model_info", {})
+            host = kwargs.get(
+                "host",
+                cfg.file_config.get("OLLAMA_BASE_URL", "http://192.168.1.201:11434"),
+            )
+            llm: LLM = Ollama(
+                model=kwargs["model"],
+                base_url=host,
+                model_info=model_info,
+                max_tokens=kwargs["max_token"],
+            )
+        except Exception as e:
+            raise Exception(f"gen_config: Failed to get {provider} LLM") from e
+    elif provider == "vertex":
         logger.warning(
             "Support of Vertex Gemini LLMs is still in experimental stage, use with caution"
         )
@@ -82,7 +97,7 @@ def get_llm(**kwargs) -> LLM:
 
         except Exception as e:
             raise Exception(f"gen_config: Failed to get {provider} LLM") from e
-    elif kwargs["provider"] == "vertexanthropic":
+    elif provider == "vertexanthropic":
         service_account_path = os.path.expanduser(cfg["VERTEX_SERVICE_ACCOUNT_PATH"])
         if not os.path.exists(service_account_path):
             raise FileNotFoundError(
