@@ -7,6 +7,7 @@ from anthropic.types import Usage
 from llama_index.core.base.llms.types import ChatMessage, ChatResponse
 from llama_index.core.llms.llm import LLM
 from llama_index.llms.anthropic import Anthropic
+from llama_index.llms.ollama import Ollama
 from llama_index.llms.openai import OpenAI
 from llama_index.llms.vertex import Vertex
 from pydantic import BaseModel
@@ -120,7 +121,7 @@ class TokenCounter:
         self.token_cnts_lock = asyncio.Lock()
         self.cur_tag = ""
         self.max_parallel_requests: int = 10
-        self.enable_reformat_json = isinstance(llm, Vertex)
+        self.enable_reformat_json = isinstance(llm, (Vertex, Ollama))
         model = llm.metadata.model_name
         if isinstance(llm, OpenAI):
             self.encoding = tiktoken.encoding_for_model(model)
