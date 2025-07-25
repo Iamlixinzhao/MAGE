@@ -13,19 +13,42 @@ def add_lineno(file_content: str) -> str:
 
 
 def reformat_json_string(output: str) -> str:
-    # in gemini, the output has markdown surrounding the json string
-    # like ```json ... ```
-    # we need to remove the markdown
-    # remove by using regex between ```json and ```
+    # 1. Extract JSON from <output_format>...</output_format> tags if present
+    pattern = r"<output_format>(.*?)</output_format>"
+    match = re.search(pattern, output, re.DOTALL)
+    if match:
+        output = match.group(1).strip()
+
+    # 2. Remove markdown code blocks (existing logic)
     pattern = r"```json(.*?)```"
     match = re.search(pattern, output, re.DOTALL)
     if match:
-        return match.group(1).strip()
+        output = match.group(1).strip()
 
     pattern = r"```xml(.*?)```"
     match = re.search(pattern, output, re.DOTALL)
     if match:
-        return match.group(1).strip()
+        output = match.group(1).strip()
+
+    # 3. If the JSON has a 'module' field, clean it
+    try:
+        import json
+
+        json_obj = json.loads(output)
+        if "module" in json_obj:
+            module_text = json_obj["module"]
+            # Strip XML/HTML-like tags from the module field
+            module_text_clean = re.sub(r"<[^>]+>", "", module_text).strip()
+            # Extract Verilog code between 'module TopModule' and 'endmodule'
+            pattern = r"(module TopModule.*?endmodule)"
+            match = re.search(pattern, module_text_clean, re.DOTALL)
+            if match:
+                json_obj["module"] = match.group(1).strip()
+            else:
+                json_obj["module"] = module_text_clean
+            return json.dumps(json_obj, ensure_ascii=False)
+    except Exception:
+        pass  # If not JSON, just return cleaned output
 
     return output.strip()
 
