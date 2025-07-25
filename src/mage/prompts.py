@@ -621,5 +621,7 @@ So, please STRICTLY FOLLOW the output format given as XML tag content below to g
 <output_format>
 {output_format}
 </output_format>
+IMPORTANT: The "module" field must contain ONLY the complete Verilog code, starting with "module TopModule" and ending with "endmodule". Do NOT include descriptions, explanations, or comments about the code in the "module" field.
 DO NOT include any other information in your response, like 'json', 'reasoning' or '<output_format>'.
 """
+
