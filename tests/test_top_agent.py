@@ -21,22 +21,26 @@ logger = get_logger(__name__)
 
 
 args_dict = {
-    "provider": "vertexanthropic",
-    "model": "claude-3-7-sonnet@20250219",
+    # "provider": "vertexanthropic",
+    # "provider": "openai",
+    "provider": "ollama",
+    # "model": "claude-3-7-sonnet@20250219",
     # "model": "gemini-2.0-flash-001",
     # "model": "claude-3-7-sonnet-20250219",
     # "model": "gpt-4o-2024-08-06",
-    # "filter_instance": "^(Prob070_ece241_2013_q2|Prob151_review2015_fsm)$",
-    "filter_instance": "^(Prob011_norgate)$",
-    # "filter_instance": "^(.*)$",
+    # "model": "qwen2.5-coder:7b",
+    "model": "hf.co/mradermacher/VeriReason-Qwen2.5-7b-RTLCoder-Verilog-GRPO-reasoning-tb-i1-GGUF:Q4_K_M",
+    # "filter_instance": "^(Prob151_review2015_fsm)$",
+    # "filter_instance": "^(Prob011_norgate)$",
+    "filter_instance": "^(.*)$",
     "type_benchmark": "verilog_eval_v2",
     "path_benchmark": "./verilog-eval",
     "run_identifier": "your_run_identifier",
     "n": 1,
-    "temperature": 0.85,
+    "temperature": 0.2,
     "top_p": 0.95,
     "max_token": 8192,
-    "use_golden_tb_in_mage": True,
+    "use_golden_tb_in_mage": False,
     "key_cfg_path": "./key.cfg",
 }
 
