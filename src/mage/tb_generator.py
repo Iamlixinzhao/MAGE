@@ -5,15 +5,15 @@ from llama_index.core.base.llms.types import ChatMessage, ChatResponse, MessageR
 from pydantic import BaseModel
 
 from .log_utils import get_logger
-from .prompts import FAILED_TRIAL_PROMPT, ORDER_PROMPT, TB_4_SHOT_EXAMPLES
+from .prompts import FAILED_TRIAL_PROMPT, ORDER_PROMPT, TB_2_SHOT_EXAMPLES
 from .token_counter import TokenCounter, TokenCounterCached
 from .utils import add_lineno
 
 logger = get_logger(__name__)
 
 SYSTEM_PROMPT = r"""
-You are an expert in SystemVerilog design.
-You can always write SystemVerilog code with no syntax errors and always reach correct functionality.
+You are an expert in Verilog design.
+You can always write Verilog code with no syntax errors and always reach correct functionality.
 """
 
 NON_GOLDEN_TB_PROMPT = r"""
@@ -40,9 +40,9 @@ The testbench should:
     the expected output should be checked at the exact moment when the input is changed;
 8. Avoid using keyword "continue"
 
-Try to understand the requirements above and give reasoning steps in natural language to achieve it.
+Try to understand the requirements above and give a brief one-sentence reasoning to achieve it.
 In addition, try to give advice to avoid syntax error.
-An SystemVerilog module always starts with a line starting with the keyword 'module' followed by the module name.
+A Verilog module always starts with a line starting with the keyword 'module' followed by the module name.
 It ends with the keyword 'endmodule'.
 
 {examples_prompt}
@@ -74,9 +74,9 @@ Please also follow the display prompt below:
 {display_prompt}
 
 
-Try to understand the requirements above and give reasoning steps in natural language to achieve it.
+Try to understand the requirements above and give a brief one-sentence reasoning to achieve it.
 In addition, try to give advice to avoid syntax error.
-An SystemVerilog module always starts with a line starting with the keyword 'module' followed by the module name.
+A Verilog module always starts with a line starting with the keyword 'module' followed by the module name.
 It ends with the keyword 'endmodule'.
 
 Below is the golden testbench code for the module generated with the given natural language specification.
@@ -156,8 +156,8 @@ end
 
 
 EXAMPLE_OUTPUT = {
-    "reasoning": "All reasoning steps and advices to avoid syntax error",
-    "interface": "The IO part of a SystemVerilog module, not containing the module implementation",
+    "reasoning": "Brief one-sentence reasoning",
+    "interface": "The IO part of a Verilog module, not containing the module implementation",
     "testbench": "The testbench code to test the module",
 }
 
@@ -174,7 +174,7 @@ Especially if the input_spec say some input should not exist, but as long as the
 Remember to display "SIMULATION PASSED" when simulation ends if no mismatch occurs, otherwise display "SIMULATION FAILED - x MISMATCHES DETECTED, FIRST AT TIME y".
 Remember to add display for the FIRST mismatch, while maintaining the original logic of error counting;
 ALWAYS generate the complete testbench, no matter how long it is.
-Generate interface according to golden testbench, even if it contradicts the input_spec. Declare all ports as logic.
+Generate interface according to golden testbench, even if it contradicts the input_spec. Declare all ports as wire for inputs and combinational outputs, or reg for sequential outputs.
 """
 
 EXTRA_ORDER_NON_GOLDEN_TB_PROMPT = r"""
@@ -246,7 +246,7 @@ class TBGenerator:
         else:
             generation_content = NON_GOLDEN_TB_PROMPT.format(
                 input_spec=input_spec,
-                examples_prompt=TB_4_SHOT_EXAMPLES,
+                examples_prompt=TB_2_SHOT_EXAMPLES,
                 display_prompt=display_prompt,
             )
         ret = [
