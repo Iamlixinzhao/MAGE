@@ -65,7 +65,7 @@ def get_llm(**kwargs) -> LLM:
             model_info = kwargs.get("model_info", {})
             host = kwargs.get(
                 "host",
-                cfg.file_config.get("OLLAMA_BASE_URL", "http://192.168.1.201:11434"),
+                cfg.file_config.get("OLLAMA_BASE_URL", "http://localhost:11434"),
             )
             llm: LLM = Ollama(
                 model=kwargs["model"],
