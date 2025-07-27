@@ -5,7 +5,7 @@ from llama_index.core.base.llms.types import ChatMessage, ChatResponse, MessageR
 from pydantic import BaseModel
 
 from .log_utils import get_logger
-from .prompts import FAILED_TRIAL_PROMPT, ORDER_PROMPT, RTL_4_SHOT_EXAMPLES
+from .prompts import FAILED_TRIAL_PROMPT, ORDER_PROMPT, RTL_2_SHOT_EXAMPLES
 from .sim_reviewer import check_syntax
 from .token_counter import TokenCounter, TokenCounterCached
 from .utils import add_lineno
@@ -13,14 +13,14 @@ from .utils import add_lineno
 logger = get_logger(__name__)
 
 SYSTEM_PROMPT = r"""
-You are an expert in RTL design. You can always write SystemVerilog code with no syntax errors and always reach correct functionality.
+You are an expert in RTL design. You can always write Verilog code with no syntax errors and always reach correct functionality.
 """
 
 GENERATION_PROMPT = r"""
-Please write a module in SystemVerilog RTL language regarding to the given natural language specification.
-Try to understand the requirements above and give reasoning steps in natural language to achieve it.
+Please write a module in Verilog RTL language regarding to the given natural language specification.
+Try to understand the requirements above and give a brief one-sentence reasoning to achieve it.
 In addition, try to give advice to avoid syntax error.
-An SystemVerilog RTL module always starts with a line starting with the keyword 'module' followed by the module name.
+A Verilog RTL module always starts with a line starting with the keyword 'module' followed by the module name.
 It ends with the keyword 'endmodule'.
 
 [Hints]:
@@ -45,8 +45,8 @@ Otherwise, should EXACTLY MATCH with the description in input_spec.
 
 EXTRA_ORDER_PROMPT = r"""
 Other requirements:
-1. Don't use state_t to define the parameter. Use `localparam` or Use 'reg' or 'logic' for signals as registers or Flip-Flops.
-2. Declare all ports and signals as logic.
+1. Don't use state_t to define the parameter. Use `localparam` or Use 'reg' for signals as registers or Flip-Flops.
+2. Declare all ports as wire for inputs and combinational outputs, or reg for sequential outputs. Use wire for combinational signals and reg for sequential signals inside the module.
 3. Not all the sequential logic need to be reset to 0 when reset is asserted,
     but these without-reset logic should be initialized to a known value with an initial block instead of being X.
 4. For combinational logic with an always block do not explicitly specify the sensitivity list; instead use always @(*).
@@ -90,8 +90,8 @@ To understand the error message better, we offered a version of generated module
 """
 
 EXAMPLE_OUTPUT = {
-    "reasoning": "All reasoning steps and advices to avoid syntax error",
-    "module": "Pure SystemVerilog code, a complete module",
+    "reasoning": "Brief one-sentence reasoning",
+    "module": "Pure Verilog code, a complete module",
 }
 
 
@@ -152,7 +152,7 @@ class RTLGenerator:
             ChatMessage(content=SYSTEM_PROMPT, role=MessageRole.SYSTEM),
             ChatMessage(
                 content=GENERATION_PROMPT.format(
-                    input_spec=input_spec, examples_prompt=RTL_4_SHOT_EXAMPLES
+                    input_spec=input_spec, examples_prompt=RTL_2_SHOT_EXAMPLES
                 ),
                 role=MessageRole.USER,
             ),
