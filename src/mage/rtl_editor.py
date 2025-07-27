@@ -14,7 +14,7 @@ logger = get_logger(__name__)
 
 SYSTEM_PROMPT = r"""
 You are an expert in RTL design.
-Your job is to use actions to edit and simulate SystemVerilog rtl_code,
+Your job is to use actions to edit and simulate Verilog rtl_code,
 To make sure the edited code has the functionality described in input_spec, and passes the simulation.
 The actions below are available:
 <actions>
@@ -51,19 +51,19 @@ Find the inputs corresponding to mismatch in sim_failed_log, and set the output 
 """
 
 EXTRA_ORDER_PROMPT = r"""
-1. Try to understand the input_spec, locate the suspicious range, and give reasoning steps in natural language to solve the mismatchs 1 by 1.
+1. Try to understand the input_spec, locate the suspicious range, and give a brief one-sentence reasoning to solve the mismatches.
     In addition, try to give advice to avoid syntax error.
 2. For sequencial logic, carefully examine whether the signal should change when "next_state" matches, or when "state" matches.
 3. For combinational logic, if encountered error with complicated multiline singal:
     Try to comment each line of the signal to avoid missing any part.
-4. Don't use state_t to define the parameter. Use `localparam` or Use 'reg' or 'logic' for signals as registers or Flip-Flops.
+4. Don't use state_t to define the parameter. Use `localparam` or Use 'reg' for signals as registers or Flip-Flops.
 5. DO NOT close quotes at last line before the inline comment. It would break the json syntax.
     If quote is closed before the comment, just don't add the comment.
 6. Do not try to modify the testbench. Only modify the RTL code.
     Also do not try to change or define RefModule. There is RefModule defined elsewhere.
 7. Always try modify RTL code as long as simulation mismatch exists, even if you think the code is correct.
     SHOW RESPECT TO THE SIMULATION RESULT.
-8. Declare all ports as logic; use wire or reg for signals inside the block.
+8. Declare all ports as wire for inputs and combinational outputs, or reg for sequential outputs; use wire for combinational signals and reg for sequential signals inside the block.
 9. Not all the sequential logic need to be reset to 0 when reset is asserted,
     but these without-reset logic should be initialized to a known value with an initial block instead of being X.
 10. In sequence logic, if the expected output is asserted but the dut output is not,
@@ -93,7 +93,7 @@ Output after running given action:
 """
 
 EXAMPLE_OUTPUT = {
-    "reasoning": "All reasoning steps",
+    "reasoning": "Brief one-sentence reasoning",
     "action_input": {
         "command": "replace_content_by_matching",
         "args": {
@@ -248,13 +248,13 @@ class RTLEditor:
                 "command": "replace_content_by_matching",
                 "args": {
                     "old_content": "  reg a;\n  reg b;",
-                    "new_content": "  logic a;",
+                    "new_content": "  reg a;",
                 },
             </action_input>
             Now:
             <example_rtl>
                 1 module test;
-                2   logic a;
+                2   reg a;
                 4 endmodule
             </example_rtl>
         """
