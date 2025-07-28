@@ -7,6 +7,7 @@ from llama_index.llms.anthropic import Anthropic
 from llama_index.llms.ollama import Ollama  # Add this import for Ollama support
 from llama_index.llms.openai import OpenAI
 from llama_index.llms.vertex import Vertex
+from llama_index.llms.vllm import Vllm  # Add this import for Vllm support
 from pydantic import BaseModel
 
 from .log_utils import get_logger
@@ -65,12 +66,26 @@ def get_llm(**kwargs) -> LLM:
             model_info = kwargs.get("model_info", {})
             host = kwargs.get(
                 "host",
-                cfg.file_config.get("OLLAMA_BASE_URL", "http://localhost:11434"),
+                cfg.file_config.get("OLLAMA_BASE_URL", "http://192.168.1.201:11434"),
             )
             llm: LLM = Ollama(
                 model=kwargs["model"],
                 base_url=host,
                 model_info=model_info,
+                max_tokens=kwargs["max_token"],
+            )
+        except Exception as e:
+            raise Exception(f"gen_config: Failed to get {provider} LLM") from e
+    elif provider == "vllm":
+        try:
+            # Accept vllm specific parameters from kwargs
+            base_url = kwargs.get(
+                "base_url",
+                cfg.file_config.get("VLLM_BASE_URL", "http://localhost:8000"),
+            )
+            llm: LLM = Vllm(
+                model=kwargs["model"],
+                base_url=base_url,
                 max_tokens=kwargs["max_token"],
             )
         except Exception as e:
