@@ -10,6 +10,7 @@ from llama_index.llms.anthropic import Anthropic
 from llama_index.llms.ollama import Ollama
 from llama_index.llms.openai import OpenAI
 from llama_index.llms.vertex import Vertex
+from llama_index.llms.vllm import Vllm  # Add this import for Vllm support
 from pydantic import BaseModel
 from vertexai.preview.generative_models import GenerativeModel
 
@@ -121,12 +122,21 @@ class TokenCounter:
         self.token_cnts_lock = asyncio.Lock()
         self.cur_tag = ""
         self.max_parallel_requests: int = 10
-        self.enable_reformat_json = isinstance(llm, (Vertex, Ollama))
+        self.enable_reformat_json = isinstance(llm, (Vertex, Ollama, Vllm))
         model = llm.metadata.model_name
         if isinstance(llm, OpenAI):
             self.encoding = tiktoken.encoding_for_model(model)
         elif isinstance(llm, Anthropic):
             self.encoding = llm.tokenizer
+        elif isinstance(llm, Vllm):
+            # For Vllm, we'll use tiktoken as fallback since Vllm doesn't provide direct tokenizer access
+            # You might need to adjust this based on the specific model being used
+            try:
+                self.encoding = tiktoken.encoding_for_model(model)
+            except KeyError:
+                # Fallback to cl100k_base encoding for unknown models
+                self.encoding = tiktoken.get_encoding("cl100k_base")
+            logger.info(f"Using tiktoken encoding for Vllm model: {model}")
         elif isinstance(llm, Vertex):
             assert llm.model.startswith(
                 "gemini"
