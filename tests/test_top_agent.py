@@ -23,6 +23,7 @@ logger = get_logger(__name__)
 args_dict = {
     # "provider": "vertexanthropic",
     # "provider": "openai",
+    # "provider": "vllm",  # Add VLLM support
     "provider": "ollama",
     # "model": "claude-3-7-sonnet@20250219",
     # "model": "gemini-2.0-flash-001",
@@ -37,11 +38,12 @@ args_dict = {
     "path_benchmark": "./verilog-eval",
     "run_identifier": "your_run_identifier",
     "n": 1,
-    "temperature": 0.2,
+    "temperature": 0.7,
     "top_p": 0.95,
     "max_token": 8192,
     "use_golden_tb_in_mage": False,
     "key_cfg_path": "./key.cfg",
+    # "base_url": "http://localhost:8000",  # VLLM server URL (optional)
 }
 
 
