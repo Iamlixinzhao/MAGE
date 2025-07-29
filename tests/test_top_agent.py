@@ -23,27 +23,28 @@ logger = get_logger(__name__)
 args_dict = {
     # "provider": "vertexanthropic",
     # "provider": "openai",
-    # "provider": "vllm",  # Add VLLM support
-    "provider": "ollama",
+    "provider": "vllm",  # Use VLLM
+    # "provider": "ollama",
     # "model": "claude-3-7-sonnet@20250219",
     # "model": "gemini-2.0-flash-001",
     # "model": "claude-3-7-sonnet-20250219",
     # "model": "gpt-4o-2024-08-06",
     # "model": "qwen2.5-coder:7b",
-    "model": "hf.co/mradermacher/VeriReason-Qwen2.5-7b-RTLCoder-Verilog-GRPO-reasoning-tb-i1-GGUF:Q4_K_M",
-    # "filter_instance": "^(Prob151_review2015_fsm)$",
+    # "model": "hf.co/mradermacher/VeriReason-Qwen2.5-7b-RTLCoder-Verilog-GRPO-reasoning-tb-i1-GGUF:Q4_K_M",
+    "model": "Qwen/Qwen2.5-Coder-32B-Instruct",  # Use the 32B model we downloaded
+    #"filter_instance": "^(Prob151_review2015_fsm)$",
     # "filter_instance": "^(Prob011_norgate)$",
     "filter_instance": "^(.*)$",
     "type_benchmark": "verilog_eval_v2",
     "path_benchmark": "./verilog-eval",
     "run_identifier": "your_run_identifier",
     "n": 1,
-    "temperature": 0.7,
+    "temperature": 0.3,  # 降低温度，提高Verilog代码生成的准确性
     "top_p": 0.95,
-    "max_token": 8192,
+    "max_token": 1500,  # 降低默认值，避免token超限
     "use_golden_tb_in_mage": False,
     "key_cfg_path": "./key.cfg",
-    # "base_url": "http://localhost:8000",  # VLLM server URL (optional)
+    "base_url": "http://localhost:8000",  # VLLM server URL
 }
 
 
