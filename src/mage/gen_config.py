@@ -12,6 +12,7 @@ from pydantic import BaseModel
 
 from .log_utils import get_logger
 from .utils import VertexAnthropicWithCredentials
+from .vllm_client import CustomVllmClient  # Add custom vLLM client
 
 logger = get_logger(__name__)
 
@@ -79,14 +80,21 @@ def get_llm(**kwargs) -> LLM:
     elif provider == "vllm":
         try:
             # Accept vllm specific parameters from kwargs
-            base_url = kwargs.get(
+            api_url = kwargs.get(
                 "base_url",
                 cfg.file_config.get("VLLM_BASE_URL", "http://localhost:8000"),
             )
-            llm: LLM = Vllm(
-                model=kwargs["model"],
-                base_url=base_url,
-                max_tokens=kwargs["max_token"],
+            # For Qwen2.5-Coder-32B-Instruct, we need to specify the model name
+            # that matches what's deployed on vLLM
+            model_name = kwargs.get("model", "Qwen/Qwen2.5-Coder-32B-Instruct")
+            
+            # Use our custom vLLM client that connects via HTTP
+            llm: LLM = CustomVllmClient(
+                model=model_name,
+                api_url=api_url,
+                max_new_tokens=kwargs["max_token"],
+                temperature=kwargs.get("temperature", 0.7),
+                top_p=kwargs.get("top_p", 0.95),
             )
         except Exception as e:
             raise Exception(f"gen_config: Failed to get {provider} LLM") from e
@@ -151,7 +159,7 @@ class ExperimentSetting(BaseModel):
     Global setting for experiment
     """
 
-    temperature: float = 0.85  # Chat temperature
+    temperature: float = 0.3  # 降低温度，提高Verilog代码生成的准确性
     top_p: float = 0.95  # Chat top_p
 
 
